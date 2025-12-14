@@ -12,7 +12,7 @@ class MarkdownEditorComponent extends HTMLElement {
     }
 
     static get observedAttributes() {
-        return ['initial-text', 'auto-detect-rtl', 'show-toolbar', 'show-controls', 'placeholder'];
+        return ['initial-text', 'auto-detect-rtl', 'show-toolbar', 'show-controls', 'placeholder', 'default-direction'];
     }
 
     connectedCallback() {
@@ -26,12 +26,15 @@ class MarkdownEditorComponent extends HTMLElement {
                 this.markdownEditor.setText(newValue || '');
             } else if (name === 'auto-detect-rtl') {
                 this.markdownEditor.setAutoDetectRTL(newValue === 'true');
+            } else if (name === 'default-direction') {
+                this.markdownEditor.direction = newValue === 'ltr' ? 'ltr' : 'rtl';
+                this.markdownEditor.updateDirection();
             }
         }
     }
 
     render() {
-        const showToolbar = this.getAttribute('show-toolbar') !== 'false';
+        const showToolbar = this.getAttribute('show-toolbar') === 'true';
         const showControls = this.getAttribute('show-controls') !== 'false';
         const placeholder = this.getAttribute('placeholder') || 'Type your markdown here...';
 
@@ -51,6 +54,7 @@ class MarkdownEditorComponent extends HTMLElement {
                         <span>Editor</span>
                         ${showControls ? `
                         <div class="controls">
+                            <button id="toggleToolbarBtn" class="btn" title="Toggle Toolbar">🔧 Toolbar</button>
                             <button id="toggleDirection" class="btn">↔️ Toggle RTL/LTR</button>
                             <button id="clearBtn" class="btn">🗑️ Clear</button>
                             <button id="downloadBtn" class="btn">💾 Download</button>
@@ -58,8 +62,7 @@ class MarkdownEditorComponent extends HTMLElement {
                         ` : ''}
                         <span class="direction-indicator" id="editorDirection">LTR</span>
                     </div>
-                    ${showToolbar ? `
-                    <div class="toolbar">
+                    <div class="toolbar" id="toolbar" style="display: ${showToolbar ? 'flex' : 'none'}">
                         <button class="toolbar-btn" data-action="h1" title="Header 1">
                             <strong>H1</strong>
                         </button>
@@ -100,7 +103,6 @@ class MarkdownEditorComponent extends HTMLElement {
                             &lt;/&gt;
                         </button>
                     </div>
-                    ` : ''}
                     <textarea id="editor" placeholder="${placeholder}"></textarea>
                 </div>
             </div>
@@ -114,13 +116,17 @@ class MarkdownEditorComponent extends HTMLElement {
         const toggleDirectionBtn = this.shadowRoot.getElementById('toggleDirection');
         const clearBtn = this.shadowRoot.getElementById('clearBtn');
         const downloadBtn = this.shadowRoot.getElementById('downloadBtn');
+        const toggleToolbarBtn = this.shadowRoot.getElementById('toggleToolbarBtn');
+        const toolbar = this.shadowRoot.getElementById('toolbar');
         const editorDirectionIndicator = this.shadowRoot.getElementById('editorDirection');
         const previewDirectionIndicator = this.shadowRoot.getElementById('previewDirection');
 
         // Initialize the core markdown editor
+        const defaultDirection = this.getAttribute('default-direction') || 'rtl';
         this.markdownEditor = new MarkdownEditor({
             initialText: this.getAttribute('initial-text') || '',
-            autoDetectRTL: this.getAttribute('auto-detect-rtl') !== 'false',
+            autoDetectRTL: this.getAttribute('auto-detect-rtl') === 'true',
+            defaultDirection: defaultDirection,
             onTextChange: (text, html) => {
                 preview.innerHTML = html || '<p style="color: #cbd5e0;">Preview will appear here...</p>';
                 this.dispatchEvent(new CustomEvent('text-change', { 
@@ -172,6 +178,15 @@ class MarkdownEditorComponent extends HTMLElement {
         });
 
         // Control buttons
+        if (toggleToolbarBtn) {
+            toggleToolbarBtn.addEventListener('click', () => {
+                const isVisible = toolbar.style.display !== 'none';
+                toolbar.style.display = isVisible ? 'none' : 'flex';
+                toggleToolbarBtn.textContent = isVisible ? '🔧 Toolbar' : '🔧 Toolbar';
+                toggleToolbarBtn.style.background = isVisible ? '#4299e1' : '#38a169';
+            });
+        }
+
         if (toggleDirectionBtn) {
             toggleDirectionBtn.addEventListener('click', () => {
                 this.markdownEditor.toggleDirection();
@@ -222,6 +237,9 @@ class MarkdownEditorComponent extends HTMLElement {
         if (initialText) {
             editorTextarea.value = initialText;
             this.markdownEditor.setText(initialText);
+        } else {
+            // Trigger initial direction update even without text
+            this.markdownEditor.updateDirection();
         }
     }
 
@@ -332,6 +350,7 @@ class MarkdownEditorComponent extends HTMLElement {
                     flex-wrap: wrap;
                     gap: 15px;
                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    min-height: 64px;
                 }
 
                 .pane-header .controls {

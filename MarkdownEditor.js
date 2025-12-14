@@ -5,13 +5,18 @@
 class MarkdownEditor {
     constructor(options = {}) {
         this.text = options.initialText || '';
-        this.direction = 'ltr'; // 'ltr' or 'rtl'
+        this.direction = options.defaultDirection || 'rtl'; // 'ltr' or 'rtl', default is rtl
         this.autoDetectRTL = options.autoDetectRTL !== undefined ? options.autoDetectRTL : true;
         this.manualDirection = null; // null = auto, 'ltr' or 'rtl' = manual override
         
         // Callbacks
         this.onTextChange = options.onTextChange || (() => {});
         this.onDirectionChange = options.onDirectionChange || (() => {});
+        
+        // Trigger initial direction callback
+        if (this.onDirectionChange) {
+            this.onDirectionChange(this.direction);
+        }
     }
 
     /**
@@ -178,10 +183,19 @@ class MarkdownEditor {
 
         if (this.autoDetectRTL && this.manualDirection === null) {
             // Auto-detect mode
-            isRTL = this.containsRTL(this.text);
+            if (this.text && this.text.trim()) {
+                // If there's text, detect based on content
+                isRTL = this.containsRTL(this.text);
+            } else {
+                // If no text, use the default direction set in constructor
+                isRTL = this.direction === 'rtl';
+            }
         } else if (this.manualDirection !== null) {
             // Manual mode
             isRTL = this.manualDirection === 'rtl';
+        } else {
+            // Fallback to current direction
+            isRTL = this.direction === 'rtl';
         }
 
         const newDirection = isRTL ? 'rtl' : 'ltr';
