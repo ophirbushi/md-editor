@@ -8,20 +8,6 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>Markdown Editor</h1>
-            <div class="controls">
-                <button id="toggleDirection" class="btn">↔️ Toggle RTL/LTR</button>
-                <button id="clearBtn" class="btn">🗑️ Clear</button>
-                <button id="downloadBtn" class="btn">💾 Download</button>
-                <label class="switch">
-                    <input type="checkbox" id="autoDetectRTL" checked>
-                    <span class="slider"></span>
-                    <span class="label-text">Auto-detect RTL</span>
-                </label>
-            </div>
-        </header>
-
         <div class="editor-container">
             <div class="preview-pane">
                 <div class="pane-header">
@@ -34,6 +20,11 @@
             <div class="editor-pane">
                 <div class="pane-header">
                     <span>Editor</span>
+                    <div class="controls">
+                        <button id="toggleDirection" class="btn">↔️ Toggle RTL/LTR</button>
+                        <button id="clearBtn" class="btn">🗑️ Clear</button>
+                        <button id="downloadBtn" class="btn">💾 Download</button>
+                    </div>
                     <span class="direction-indicator" id="editorDirection">LTR</span>
                 </div>
                 <div class="toolbar">
@@ -87,10 +78,6 @@
 - عنصر القائمة"></textarea>
             </div>
         </div>
-
-        <footer>
-            <p>Supports Hebrew (עברית), Arabic (العربية), and other RTL languages</p>
-        </footer>
     </div>
 
     <script src="MarkdownEditor.js"></script>

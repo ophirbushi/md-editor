@@ -20,22 +20,6 @@ body {
     overflow: hidden;
 }
 
-header {
-    background: #2d3748;
-    color: white;
-    padding: 20px 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 15px;
-}
-
-header h1 {
-    font-size: 24px;
-    font-weight: 600;
-}
-
 .controls {
     display: flex;
     gap: 10px;
@@ -146,6 +130,17 @@ input:checked + .slider:before {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.pane-header .controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    flex: 1;
+    justify-content: center;
 }
 
 .direction-indicator {
@@ -354,15 +349,6 @@ input:checked + .slider:before {
     border: none;
     border-top: 2px solid #e2e8f0;
     margin: 24px 0;
-}
-
-footer {
-    background: #f7fafc;
-    padding: 15px 30px;
-    text-align: center;
-    color: #718096;
-    font-size: 14px;
-    border-top: 1px solid #e2e8f0;
 }
 
 /* Responsive Design */
