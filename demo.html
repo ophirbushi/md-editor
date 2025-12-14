@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown Editor Web Component - Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .demo-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 18px;
+        }
+
+        .editor-wrapper {
+            height: 600px;
+            margin-bottom: 30px;
+        }
+
+        .controls-demo {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .controls-demo h3 {
+            margin-top: 0;
+            color: #2d3748;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .demo-btn {
+            padding: 10px 20px;
+            background: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .demo-btn:hover {
+            background: #3182ce;
+        }
+
+        .output {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            font-family: monospace;
+            font-size: 13px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        code {
+            background: #2d3748;
+            color: #f7fafc;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1>Markdown Editor Web Component</h1>
+        <p class="subtitle">A reusable, framework-agnostic web component</p>
+
+        <!-- The Web Component -->
+        <div class="editor-wrapper">
+            <markdown-editor 
+                id="myEditor"
+                initial-text="# Welcome to Markdown Editor
+
+This is a **web component** that you can use anywhere!
+
+## Features
+- RTL Support (עברית, العربية)
+- Live preview
+- Toolbar for common operations
+- Keyboard shortcuts
+
+Try editing this text!"
+                auto-detect-rtl="true"
+                show-toolbar="true"
+                show-controls="true">
+            </markdown-editor>
+        </div>
+
+        <!-- API Demo Controls -->
+        <div class="controls-demo">
+            <h3>Public API Demo</h3>
+            <div class="btn-group">
+                <button class="demo-btn" onclick="demoGetText()">Get Text</button>
+                <button class="demo-btn" onclick="demoGetHTML()">Get HTML</button>
+                <button class="demo-btn" onclick="demoSetText()">Set Sample Text</button>
+                <button class="demo-btn" onclick="demoClear()">Clear</button>
+            </div>
+            <div id="output" class="output" style="display: none;"></div>
+        </div>
+
+        <!-- Usage Examples -->
+        <div class="controls-demo">
+            <h3>Usage Examples</h3>
+            
+            <h4>1. Basic Usage</h4>
+            <pre><code>&lt;script src="MarkdownEditor.js"&gt;&lt;/script&gt;
+&lt;script src="markdown-editor-component.js"&gt;&lt;/script&gt;
+
+&lt;markdown-editor&gt;&lt;/markdown-editor&gt;</code></pre>
+
+            <h4>2. With Initial Text</h4>
+            <pre><code>&lt;markdown-editor initial-text="# Hello World"&gt;&lt;/markdown-editor&gt;</code></pre>
+
+            <h4>3. Custom Configuration</h4>
+            <pre><code>&lt;markdown-editor 
+    initial-text="Your markdown here"
+    auto-detect-rtl="true"
+    show-toolbar="false"
+    show-controls="false"
+    placeholder="Start typing..."&gt;
+&lt;/markdown-editor&gt;</code></pre>
+
+            <h4>4. Using the JavaScript API</h4>
+            <pre><code>const editor = document.querySelector('markdown-editor');
+
+// Get text
+const text = editor.getText();
+
+// Set text
+editor.setText('# New Content');
+
+// Get HTML
+const html = editor.getHTML();
+
+// Clear
+editor.clear();
+
+// Listen to events
+editor.addEventListener('text-change', (e) => {
+    console.log('Text:', e.detail.text);
+    console.log('HTML:', e.detail.html);
+});
+
+editor.addEventListener('direction-change', (e) => {
+    console.log('Direction:', e.detail.direction);
+});</code></pre>
+
+            <h4>5. Attributes</h4>
+            <ul>
+                <li><code>initial-text</code> - Initial markdown text</li>
+                <li><code>auto-detect-rtl</code> - Enable/disable RTL auto-detection (default: true)</li>
+                <li><code>show-toolbar</code> - Show/hide formatting toolbar (default: true)</li>
+                <li><code>show-controls</code> - Show/hide control buttons (default: true)</li>
+                <li><code>placeholder</code> - Placeholder text for empty editor</li>
+            </ul>
+
+            <h4>6. Events</h4>
+            <ul>
+                <li><code>text-change</code> - Fired when text changes (detail: {text, html})</li>
+                <li><code>direction-change</code> - Fired when text direction changes (detail: {direction})</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Load the component -->
+    <script src="MarkdownEditor.js"></script>
+    <script src="markdown-editor-component.js"></script>
+
+    <script>
+        const editor = document.getElementById('myEditor');
+
+        function demoGetText() {
+            const text = editor.getText();
+            showOutput('Text Content:', text);
+        }
+
+        function demoGetHTML() {
+            const html = editor.getHTML();
+            showOutput('HTML Content:', html);
+        }
+
+        function demoSetText() {
+            editor.setText(`# Sample Text Set via API
+
+This text was set using the \`setText()\` method!
+
+## Try This
+- **Bold text**
+- *Italic text*
+- [Links](https://example.com)
+
+עברית: שלום עולם
+العربية: مرحبا بالعالم`);
+        }
+
+        function demoClear() {
+            editor.clear();
+            showOutput('Editor cleared!');
+        }
+
+        function showOutput(title, content = '') {
+            const output = document.getElementById('output');
+            output.style.display = 'block';
+            output.innerHTML = `<strong>${title}</strong><br><pre>${content || '(empty)'}</pre>`;
+        }
+
+        // Listen to events
+        editor.addEventListener('text-change', (e) => {
+            console.log('Text changed:', e.detail);
+        });
+
+        editor.addEventListener('direction-change', (e) => {
+            console.log('Direction changed:', e.detail.direction);
+        });
+    </script>
+</body>
+</html>
