@@ -10,7 +10,6 @@ A markdown editor with RTL (Right-to-Left) support for Hebrew, Arabic, and other
 <!DOCTYPE html>
 <html>
 <head>
-    <script src="MarkdownEditor.js"></script>
     <script src="markdown-editor-component.js"></script>
 </head>
 <body>
@@ -80,60 +79,32 @@ editor.addEventListener('direction-change', (e) => {
 
 ## Architecture
 
-The project is organized into three layers:
+The project uses a single-file web component architecture:
 
-### 1. Core Editor Layer (`MarkdownEditor.js`)
-The core markdown editing functionality, completely independent of DOM and application-specific features.
+### Core Editor + Web Component (`markdown-editor-component.js`)
+A self-contained file that includes both the core markdown editing functionality and the web component wrapper.
 
-**Key Features:**
+**Core MarkdownEditor Class:**
 - Markdown parsing to HTML
 - RTL text detection
 - Direction management (auto-detect or manual)
 - Markdown syntax insertion helpers
 - Pure JavaScript class with no DOM dependencies
 
-**Public API:**
-```javascript
-const editor = new MarkdownEditor({
-    initialText: '',
-    autoDetectRTL: true,
-    onTextChange: (text, html) => { /* callback */ },
-    onDirectionChange: (direction) => { /* callback */ }
-});
-
-// Methods
-editor.setText(text)           // Update editor text
-editor.getText()               // Get current text
-editor.getHTML()               // Get parsed HTML
-editor.getDirection()          // Get current direction ('ltr' or 'rtl')
-editor.toggleDirection()       // Toggle direction manually
-editor.setAutoDetectRTL(bool)  // Enable/disable auto-detection
-editor.insertMarkdown(action, selectedText, position) // Insert markdown syntax
-editor.clear()                 // Clear all text
-```
-
-### 2. Web Component Layer (`markdown-editor-component.js`)
-Encapsulates the editor as a reusable web component with Shadow DOM for style isolation.
-
-**Features:**
+**Web Component Wrapper:**
 - Custom element `<markdown-editor>`
-- Shadow DOM encapsulation
+- Shadow DOM encapsulation (closed mode)
 - Configurable via attributes
 - Event-driven API
 - Framework-agnostic
-
-### 3. Application Layer (`app.js`)
-Legacy application layer for backward compatibility (optional, not needed when using the web component).
 
 ## File Structure
 
 ```
 md-editor/
-├── MarkdownEditor.js                 # Core editor (framework-agnostic)
-├── markdown-editor-component.js      # Web Component wrapper
-├── app.js                            # Legacy application layer
-├── index.html                        # Simple demo using web component
-├── demo.html                         # Comprehensive demo with examples
+├── markdown-editor-component.js      # Complete web component (core + UI)
+├── app.js                            # Legacy application layer (deprecated)
+├── index.html                        # Simple demo
 ├── styles.css                        # Legacy styles (not needed for web component)
 ├── package.json                      # Dependencies
 └── README.md                         # This file
