@@ -7,7 +7,7 @@
 class MarkdownEditorComponent extends HTMLElement {
     constructor() {
         super();
-        this.attachShadow({ mode: 'open' });
+        this._shadowRoot = this.attachShadow({ mode: 'closed' });
         this.markdownEditor = null;
     }
 
@@ -38,7 +38,7 @@ class MarkdownEditorComponent extends HTMLElement {
         const showControls = this.getAttribute('show-controls') !== 'false';
         const placeholder = this.getAttribute('placeholder') || 'הקלד את הטקסט שלך כאן...';
 
-        this.shadowRoot.innerHTML = `
+        this._shadowRoot.innerHTML = `
             ${this.getStyles()}
             <div class="editor-container">
                 <div class="preview-pane">
@@ -111,15 +111,15 @@ class MarkdownEditorComponent extends HTMLElement {
 
     initialize() {
         // Get elements from shadow DOM
-        const editorTextarea = this.shadowRoot.getElementById('editor');
-        const preview = this.shadowRoot.getElementById('preview');
-        const toggleDirectionBtn = this.shadowRoot.getElementById('toggleDirection');
-        const clearBtn = this.shadowRoot.getElementById('clearBtn');
-        const downloadBtn = this.shadowRoot.getElementById('downloadBtn');
-        const toggleToolbarBtn = this.shadowRoot.getElementById('toggleToolbarBtn');
-        const toolbar = this.shadowRoot.getElementById('toolbar');
-        const editorDirectionIndicator = this.shadowRoot.getElementById('editorDirection');
-        const previewDirectionIndicator = this.shadowRoot.getElementById('previewDirection');
+        const editorTextarea = this._shadowRoot.getElementById('editor');
+        const preview = this._shadowRoot.getElementById('preview');
+        const toggleDirectionBtn = this._shadowRoot.getElementById('toggleDirection');
+        const clearBtn = this._shadowRoot.getElementById('clearBtn');
+        const downloadBtn = this._shadowRoot.getElementById('downloadBtn');
+        const toggleToolbarBtn = this._shadowRoot.getElementById('toggleToolbarBtn');
+        const toolbar = this._shadowRoot.getElementById('toolbar');
+        const editorDirectionIndicator = this._shadowRoot.getElementById('editorDirection');
+        const previewDirectionIndicator = this._shadowRoot.getElementById('previewDirection');
 
         // Initialize the core markdown editor
         const defaultDirection = this.getAttribute('default-direction') || 'rtl';
@@ -168,7 +168,7 @@ class MarkdownEditorComponent extends HTMLElement {
         });
 
         // Toolbar functionality
-        const toolbarButtons = this.shadowRoot.querySelectorAll('.toolbar-btn');
+        const toolbarButtons = this._shadowRoot.querySelectorAll('.toolbar-btn');
         toolbarButtons.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -283,7 +283,7 @@ class MarkdownEditorComponent extends HTMLElement {
     }
 
     setText(text) {
-        const editorTextarea = this.shadowRoot.getElementById('editor');
+        const editorTextarea = this._shadowRoot.getElementById('editor');
         editorTextarea.value = text;
         if (this.markdownEditor) {
             this.markdownEditor.setText(text);
@@ -295,7 +295,7 @@ class MarkdownEditorComponent extends HTMLElement {
     }
 
     clear() {
-        const editorTextarea = this.shadowRoot.getElementById('editor');
+        const editorTextarea = this._shadowRoot.getElementById('editor');
         editorTextarea.value = '';
         if (this.markdownEditor) {
             this.markdownEditor.clear();
