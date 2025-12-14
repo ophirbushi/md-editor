@@ -36,7 +36,7 @@ class MarkdownEditorComponent extends HTMLElement {
     render() {
         const showToolbar = this.getAttribute('show-toolbar') === 'true';
         const showControls = this.getAttribute('show-controls') !== 'false';
-        const placeholder = this.getAttribute('placeholder') || 'Type your markdown here...';
+        const placeholder = this.getAttribute('placeholder') || 'הקלד את הטקסט שלך כאן...';
 
         this.shadowRoot.innerHTML = `
             ${this.getStyles()}
