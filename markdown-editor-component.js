@@ -384,10 +384,24 @@ class MarkdownEditorComponent extends HTMLElement {
                         </button>
                         <span class="toolbar-divider"></span>
                         <button class="toolbar-btn" data-action="ul" title="Bullet List">
-                            ☰
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 16" height="16" width="16">
+                                <path fill="currentColor" d="M4 0H0v4h4V0Z" stroke-width="1"></path>
+                                <path fill="currentColor" d="M16 0H6v4h10V0Z" stroke-width="1"></path>
+                                <path fill="currentColor" d="M0 6h4v4H0V6Z" stroke-width="1"></path>
+                                <path fill="currentColor" d="M16 6H6v4h10V6Z" stroke-width="1"></path>
+                                <path fill="currentColor" d="M0 12h4v4H0v-4Z" stroke-width="1"></path>
+                                <path fill="currentColor" d="M16 12H6v4h10v-4Z" stroke-width="1"></path>
+                            </svg>
                         </button>
                         <button class="toolbar-btn" data-action="ol" title="Numbered List">
-                            ≡
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 16" height="16" width="16">
+                                <path fill="currentColor" d="M2 0 0 2h1.5v2H4V0H2Z" stroke-width="1"></path>
+                                <path fill="currentColor" d="M16 0H6v4h10V0Z" stroke-width="1"></path>
+                                <path fill="currentColor" d="M16 6H6v4h10V6Z" stroke-width="1"></path>
+                                <path fill="currentColor" d="M6 12h10v4H6v-4Z" stroke-width="1"></path>
+                                <path fill="currentColor" d="M4 12v4H0v-1.5h1.5v-1H0V12h4Z" stroke-width="1"></path>
+                                <path fill="currentColor" d="M0 8c0 -1.10457 0.89543 -2 2 -2s2 0.89543 2 2v2H0l2 -2H0Z" stroke-width="1"></path>
+                            </svg>
                         </button>
                         <button class="toolbar-btn" data-action="quote" title="Quote">
                             "
