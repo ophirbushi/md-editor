@@ -236,51 +236,51 @@ class MarkdownEditor {
         
         switch(action) {
             case 'h1':
-                newText = `# ${selectedText || 'Heading 1'}`;
-                cursorOffset = selectedText ? newText.length : 2;
+                newText = selectedText ? `# ${selectedText}` : '# ';
+                cursorOffset = newText.length;
                 break;
             case 'h2':
-                newText = `## ${selectedText || 'Heading 2'}`;
-                cursorOffset = selectedText ? newText.length : 3;
+                newText = selectedText ? `## ${selectedText}` : '## ';
+                cursorOffset = newText.length;
                 break;
             case 'h3':
-                newText = `### ${selectedText || 'Heading 3'}`;
-                cursorOffset = selectedText ? newText.length : 4;
+                newText = selectedText ? `### ${selectedText}` : '### ';
+                cursorOffset = newText.length;
                 break;
             case 'bold':
-                newText = `**${selectedText || 'bold text'}**`;
+                newText = selectedText ? `**${selectedText}**` : '****';
                 cursorOffset = selectedText ? newText.length : 2;
                 break;
             case 'italic':
-                newText = `*${selectedText || 'italic text'}*`;
+                newText = selectedText ? `*${selectedText}*` : '**';
                 cursorOffset = selectedText ? newText.length : 1;
                 break;
             case 'strikethrough':
-                newText = `~~${selectedText || 'strikethrough'}~~`;
+                newText = selectedText ? `~~${selectedText}~~` : '~~~~';
                 cursorOffset = selectedText ? newText.length : 2;
                 break;
             case 'ul':
-                newText = `- ${selectedText || 'list item'}`;
-                cursorOffset = selectedText ? newText.length : 2;
+                newText = selectedText ? `- ${selectedText}` : '- ';
+                cursorOffset = newText.length;
                 break;
             case 'ol':
-                newText = `1. ${selectedText || 'list item'}`;
-                cursorOffset = selectedText ? newText.length : 3;
+                newText = selectedText ? `1. ${selectedText}` : '1. ';
+                cursorOffset = newText.length;
                 break;
             case 'quote':
-                newText = `> ${selectedText || 'quote'}`;
-                cursorOffset = selectedText ? newText.length : 2;
+                newText = selectedText ? `> ${selectedText}` : '> ';
+                cursorOffset = newText.length;
                 break;
             case 'link':
-                newText = `[${selectedText || 'link text'}](url)`;
+                newText = selectedText ? `[${selectedText}](url)` : '[](url)';
                 cursorOffset = selectedText ? newText.length - 4 : 1;
                 break;
             case 'image':
-                newText = `![${selectedText || 'alt text'}](image-url)`;
+                newText = selectedText ? `![${selectedText}](image-url)` : '![](image-url)';
                 cursorOffset = selectedText ? newText.length - 11 : 2;
                 break;
             case 'code':
-                newText = `\`${selectedText || 'code'}\``;
+                newText = selectedText ? `\`${selectedText}\`` : '``';
                 cursorOffset = selectedText ? newText.length : 1;
                 break;
         }
@@ -403,7 +403,10 @@ class MarkdownEditorComponent extends HTMLElement {
                             &lt;/&gt;
                         </button>
                     </div>
-                    <textarea id="editor" placeholder="${placeholder}"></textarea>
+                    <div class="editor-wrapper">
+                        <div id="editorHighlight" class="editor-highlight"></div>
+                        <textarea id="editor" placeholder="${placeholder}"></textarea>
+                    </div>
                 </div>
             </div>
         `;
@@ -412,6 +415,7 @@ class MarkdownEditorComponent extends HTMLElement {
     initialize() {
         // Get elements from shadow DOM
         const editorTextarea = this._shadowRoot.getElementById('editor');
+        const editorHighlight = this._shadowRoot.getElementById('editorHighlight');
         const preview = this._shadowRoot.getElementById('preview');
         const toggleDirectionBtn = this._shadowRoot.getElementById('toggleDirection');
         const clearBtn = this._shadowRoot.getElementById('clearBtn');
@@ -421,6 +425,29 @@ class MarkdownEditorComponent extends HTMLElement {
         const editorDirectionIndicator = this._shadowRoot.getElementById('editorDirection');
         const previewDirectionIndicator = this._shadowRoot.getElementById('previewDirection');
 
+        // Syntax highlighting helper
+        const updateHighlight = () => {
+            let text = editorTextarea.value;
+            
+            // Escape HTML
+            text = text.replace(/&/g, '&amp;')
+                      .replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;');
+            
+            // Highlight markdown syntax with muted colors
+            text = text.replace(/(^|\n)(#{1,6})\s/g, '$1<span class="md-syntax md-heading">$2</span> ');
+            text = text.replace(/(\*\*|__)/g, '<span class="md-syntax">$1</span>');
+            text = text.replace(/(\*|_)(?!\*|_)/g, '<span class="md-syntax">$1</span>');
+            text = text.replace(/(~~)/g, '<span class="md-syntax">$1</span>');
+            text = text.replace(/(^|\n)([-*+])\s/gm, '$1<span class="md-syntax">$2</span> ');
+            text = text.replace(/(^|\n)(\d+\.)\s/gm, '$1<span class="md-syntax">$2</span> ');
+            text = text.replace(/(^|\n)(&gt;)\s/gm, '$1<span class="md-syntax md-quote">$2</span> ');
+            text = text.replace(/(`)/g, '<span class="md-syntax">$1</span>');
+            text = text.replace(/(!?\[)([^\]]*?)(\])(\()([^)]*?)(\))/g, '<span class="md-syntax">$1</span>$2<span class="md-syntax">$3$4</span>$5<span class="md-syntax">$6</span>');
+            
+            editorHighlight.innerHTML = text + '<br/>';
+        };
+
         // Initialize the core markdown editor
         const defaultDirection = this.getAttribute('default-direction') || 'rtl';
         this.markdownEditor = new MarkdownEditor({
@@ -428,6 +455,7 @@ class MarkdownEditorComponent extends HTMLElement {
             autoDetectRTL: this.getAttribute('auto-detect-rtl') === 'true',
             defaultDirection: defaultDirection,
             onTextChange: (text, html) => {
+                updateHighlight();
                 preview.innerHTML = html || '<p style="color: #cbd5e0;">Preview will appear here...</p>';
                 this.dispatchEvent(new CustomEvent('text-change', { 
                     detail: { text, html },
@@ -441,6 +469,8 @@ class MarkdownEditorComponent extends HTMLElement {
                 if (isRTL) {
                     editorTextarea.classList.add('rtl');
                     editorTextarea.classList.remove('ltr');
+                    editorHighlight.classList.add('rtl');
+                    editorHighlight.classList.remove('ltr');
                     preview.classList.add('rtl');
                     preview.classList.remove('ltr');
                     editorDirectionIndicator.textContent = 'RTL';
@@ -448,6 +478,8 @@ class MarkdownEditorComponent extends HTMLElement {
                 } else {
                     editorTextarea.classList.add('ltr');
                     editorTextarea.classList.remove('rtl');
+                    editorHighlight.classList.add('ltr');
+                    editorHighlight.classList.remove('ltr');
                     preview.classList.add('ltr');
                     preview.classList.remove('rtl');
                     editorDirectionIndicator.textContent = 'LTR';
@@ -465,6 +497,11 @@ class MarkdownEditorComponent extends HTMLElement {
         // Event listeners
         editorTextarea.addEventListener('input', () => {
             this.markdownEditor.setText(editorTextarea.value);
+        });
+        
+        editorTextarea.addEventListener('scroll', () => {
+            editorHighlight.scrollTop = editorTextarea.scrollTop;
+            editorHighlight.scrollLeft = editorTextarea.scrollLeft;
         });
 
         // Toolbar functionality
@@ -530,6 +567,14 @@ class MarkdownEditorComponent extends HTMLElement {
                 e.preventDefault();
                 this.insertMarkdown('italic', editorTextarea);
             }
+            
+            // Auto-continue lists on Enter
+            if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
+                const handled = this.handleEnterKeyInList(editorTextarea, e);
+                if (handled) {
+                    e.preventDefault();
+                }
+            }
         });
 
         // Set initial text if provided
@@ -540,10 +585,18 @@ class MarkdownEditorComponent extends HTMLElement {
         } else {
             // Trigger initial direction update even without text
             this.markdownEditor.updateDirection();
+            // Trigger initial highlight
+            updateHighlight();
         }
     }
 
     insertMarkdown(action, editorTextarea) {
+        // Special handling for images
+        if (action === 'image') {
+            this.showImageDialog(editorTextarea);
+            return;
+        }
+        
         const start = editorTextarea.selectionStart;
         const end = editorTextarea.selectionEnd;
         const selectedText = editorTextarea.value.substring(start, end);
@@ -557,6 +610,249 @@ class MarkdownEditorComponent extends HTMLElement {
         editorTextarea.selectionStart = editorTextarea.selectionEnd = start + cursorOffset;
         
         this.markdownEditor.setText(editorTextarea.value);
+    }
+    
+    handleEnterKeyInList(editorTextarea, e) {
+        const cursorPos = editorTextarea.selectionStart;
+        const text = editorTextarea.value;
+        const lines = text.substring(0, cursorPos).split('\n');
+        const currentLine = lines[lines.length - 1];
+        
+        // Check for unordered list
+        const ulMatch = currentLine.match(/^(\s*)([-*+])\s(.*)$/);
+        if (ulMatch) {
+            const [, indent, bullet, content] = ulMatch;
+            
+            // If the list item is empty, exit list mode
+            if (!content.trim()) {
+                // Remove the empty list item and exit
+                const beforeLine = text.substring(0, cursorPos - currentLine.length);
+                const afterCursor = text.substring(cursorPos);
+                editorTextarea.value = beforeLine + '\n' + afterCursor;
+                editorTextarea.selectionStart = editorTextarea.selectionEnd = beforeLine.length + 1;
+            } else {
+                // Continue the list
+                const newListItem = '\n' + indent + bullet + ' ';
+                const beforeCursor = text.substring(0, cursorPos);
+                const afterCursor = text.substring(cursorPos);
+                editorTextarea.value = beforeCursor + newListItem + afterCursor;
+                editorTextarea.selectionStart = editorTextarea.selectionEnd = cursorPos + newListItem.length;
+            }
+            this.markdownEditor.setText(editorTextarea.value);
+            return true;
+        }
+        
+        // Check for ordered list
+        const olMatch = currentLine.match(/^(\s*)(\d+)\.\s(.*)$/);
+        if (olMatch) {
+            const [, indent, number, content] = olMatch;
+            
+            // If the list item is empty, exit list mode
+            if (!content.trim()) {
+                // Remove the empty list item and exit
+                const beforeLine = text.substring(0, cursorPos - currentLine.length);
+                const afterCursor = text.substring(cursorPos);
+                editorTextarea.value = beforeLine + '\n' + afterCursor;
+                editorTextarea.selectionStart = editorTextarea.selectionEnd = beforeLine.length + 1;
+            } else {
+                // Continue the list with incremented number
+                const nextNumber = parseInt(number) + 1;
+                const newListItem = '\n' + indent + nextNumber + '. ';
+                const beforeCursor = text.substring(0, cursorPos);
+                const afterCursor = text.substring(cursorPos);
+                editorTextarea.value = beforeCursor + newListItem + afterCursor;
+                editorTextarea.selectionStart = editorTextarea.selectionEnd = cursorPos + newListItem.length;
+            }
+            this.markdownEditor.setText(editorTextarea.value);
+            return true;
+        }
+        
+        return false;
+    }
+    
+    showImageDialog(editorTextarea) {
+        // Create modal overlay
+        const modal = document.createElement('div');
+        modal.className = 'image-modal-overlay';
+        modal.innerHTML = `
+            <div class="image-modal">
+                <h3>הוסף תמונה</h3>
+                <div class="modal-field">
+                    <label for="imageUrl">כתובת URL של התמונה:</label>
+                    <input type="text" id="imageUrl" placeholder="https://example.com/image.jpg" style="direction: ltr;" />
+                </div>
+                <div class="modal-field">
+                    <label for="imageAlt">טקסט חלופי (תיאור):</label>
+                    <input type="text" id="imageAlt" placeholder="תיאור התמונה" />
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-btn cancel-btn">ביטול</button>
+                    <button class="modal-btn insert-btn">הוסף</button>
+                </div>
+            </div>
+        `;
+        
+        // Add styles for modal
+        const style = document.createElement('style');
+        style.textContent = `
+            .image-modal-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+            }
+            .image-modal {
+                background: white;
+                padding: 24px;
+                border-radius: 8px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                width: 90%;
+                max-width: 450px;
+                direction: rtl;
+                text-align: right;
+            }
+            .image-modal h3 {
+                margin: 0 0 20px 0;
+                color: #2d3748;
+                font-size: 20px;
+            }
+            .modal-field {
+                margin-bottom: 16px;
+            }
+            .modal-field label {
+                display: block;
+                margin-bottom: 6px;
+                color: #4a5568;
+                font-weight: 500;
+                font-size: 14px;
+            }
+            .modal-field input {
+                width: 100%;
+                padding: 8px 12px;
+                border: 1px solid #e2e8f0;
+                border-radius: 4px;
+                font-size: 14px;
+                font-family: inherit;
+                box-sizing: border-box;
+                direction: rtl;
+            }
+            .modal-field input:focus {
+                outline: none;
+                border-color: #4299e1;
+                box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+            }
+            .modal-buttons {
+                display: flex;
+                gap: 10px;
+                justify-content: flex-end;
+                margin-top: 20px;
+            }
+            .modal-btn {
+                padding: 8px 16px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 500;
+                transition: all 0.2s;
+            }
+            .cancel-btn {
+                background: #e2e8f0;
+                color: #4a5568;
+            }
+            .cancel-btn:hover {
+                background: #cbd5e0;
+            }
+            .insert-btn {
+                background: #4299e1;
+                color: white;
+            }
+            .insert-btn:hover {
+                background: #3182ce;
+            }
+        `;
+        
+        document.head.appendChild(style);
+        document.body.appendChild(modal);
+        
+        const urlInput = modal.querySelector('#imageUrl');
+        const altInput = modal.querySelector('#imageAlt');
+        const insertBtn = modal.querySelector('.insert-btn');
+        const cancelBtn = modal.querySelector('.cancel-btn');
+        
+        // Focus the URL input
+        setTimeout(() => urlInput.focus(), 100);
+        
+        // Handle insert
+        const handleInsert = () => {
+            const url = urlInput.value.trim();
+            const alt = altInput.value.trim();
+            
+            if (!url) {
+                urlInput.focus();
+                urlInput.style.borderColor = '#e53e3e';
+                return;
+            }
+            
+            const start = editorTextarea.selectionStart;
+            const end = editorTextarea.selectionEnd;
+            const beforeText = editorTextarea.value.substring(0, start);
+            const afterText = editorTextarea.value.substring(end);
+            const imageMarkdown = `![${alt}](${url})`;
+            
+            editorTextarea.value = beforeText + imageMarkdown + afterText;
+            editorTextarea.focus();
+            editorTextarea.selectionStart = editorTextarea.selectionEnd = start + imageMarkdown.length;
+            
+            this.markdownEditor.setText(editorTextarea.value);
+            
+            // Remove modal
+            document.body.removeChild(modal);
+            document.head.removeChild(style);
+        };
+        
+        // Handle cancel
+        const handleCancel = () => {
+            document.body.removeChild(modal);
+            document.head.removeChild(style);
+            editorTextarea.focus();
+        };
+        
+        insertBtn.addEventListener('click', handleInsert);
+        cancelBtn.addEventListener('click', handleCancel);
+        
+        // Handle Enter key in inputs
+        urlInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (!urlInput.value.trim()) return;
+                altInput.focus();
+            } else if (e.key === 'Escape') {
+                handleCancel();
+            }
+        });
+        
+        altInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleInsert();
+            } else if (e.key === 'Escape') {
+                handleCancel();
+            }
+        });
+        
+        // Close on overlay click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                handleCancel();
+            }
+        });
     }
 
     downloadMarkdown() {
@@ -733,16 +1029,61 @@ class MarkdownEditorComponent extends HTMLElement {
                     margin: 0 4px;
                 }
 
-                #editor {
+                .editor-wrapper {
+                    position: relative;
                     flex: 1;
+                    overflow: hidden;
+                }
+
+                .editor-highlight {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    padding: 20px;
+                    font-family: 'Courier New', Courier, monospace;
+                    font-size: 16px;
+                    line-height: 1.6;
+                    white-space: pre-wrap;
+                    word-wrap: break-word;
+                    overflow: auto;
+                    pointer-events: none;
+                    color: #2d3748;
+                    background: white;
+                    z-index: 0;
+                }
+
+                .md-syntax {
+                    color: #a0aec0;
+                    font-weight: 400;
+                }
+
+                .md-heading {
+                    color: rgba(197, 48, 231, 1);
+                    font-weight: 700;
+                    font-size: .8rem;
+                }
+
+                .md-quote {
+                    color: #4299e1;
+                }
+
+                #editor {
+                    position: relative;
+                    width: 100%;
+                    height: 100%;
                     padding: 20px;
                     border: none;
                     outline: none;
                     font-family: 'Courier New', Courier, monospace;
-                    font-size: 14px;
+                    font-size: 16px;
                     line-height: 1.6;
                     resize: none;
-                    background: white;
+                    background: transparent;
+                    color: transparent;
+                    caret-color: #2d3748;
+                    z-index: 1;
                 }
 
                 #editor::placeholder {
@@ -755,6 +1096,16 @@ class MarkdownEditorComponent extends HTMLElement {
                 }
 
                 #editor.ltr {
+                    direction: ltr;
+                    text-align: left;
+                }
+
+                .editor-highlight.rtl {
+                    direction: rtl;
+                    text-align: right;
+                }
+
+                .editor-highlight.ltr {
                     direction: ltr;
                     text-align: left;
                 }
