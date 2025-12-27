@@ -8,10 +8,12 @@
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: rgb(40, 40, 40);
+            /* background: (135deg, #667eea 0%, #764ba2 100%); */
             min-height: 100vh;
             padding: 20px;
             margin: 0;
+            box-sizing: border-box;
         }
 
         .container {
@@ -28,7 +30,7 @@
 
 <body>
     <div class="container">
-        <markdown-editor show-toolbar="true"></markdown-editor>
+        <markdown-editor></markdown-editor>
     </div>
 
     <script src="markdown-editor-component.js"></script>

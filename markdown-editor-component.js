@@ -355,7 +355,8 @@ class MarkdownEditorComponent extends HTMLElement {
                         ${showControls ? `
                         <div class="controls">
                             <button id="toggleToolbarBtn" class="btn" title="Toggle Toolbar">🔧 Toolbar</button>
-                            <button id="toggleDirection" class="btn">↔️ Toggle RTL/LTR</button>
+                            <!-- <button id="toggleDirection" class="btn">↔️ Toggle RTL/LTR</button> -->
+                            <button id="toggleDarkMode" class="btn">🌙 Dark Mode</button>
                             <button id="clearBtn" class="btn">🗑️ Clear</button>
                             <button id="downloadBtn" class="btn">💾 Download</button>
                         </div>
@@ -432,12 +433,23 @@ class MarkdownEditorComponent extends HTMLElement {
         const editorHighlight = this._shadowRoot.getElementById('editorHighlight');
         const preview = this._shadowRoot.getElementById('preview');
         const toggleDirectionBtn = this._shadowRoot.getElementById('toggleDirection');
+        const toggleDarkModeBtn = this._shadowRoot.getElementById('toggleDarkMode');
         const clearBtn = this._shadowRoot.getElementById('clearBtn');
         const downloadBtn = this._shadowRoot.getElementById('downloadBtn');
         const toggleToolbarBtn = this._shadowRoot.getElementById('toggleToolbarBtn');
         const toolbar = this._shadowRoot.getElementById('toolbar');
         const editorDirectionIndicator = this._shadowRoot.getElementById('editorDirection');
         const previewDirectionIndicator = this._shadowRoot.getElementById('previewDirection');
+        const container = this._shadowRoot.querySelector('.editor-container');
+
+        // Load dark mode preference from localStorage
+        const savedDarkMode = localStorage.getItem('md-editor-dark-mode') === 'true';
+        if (savedDarkMode) {
+            container.classList.add('dark-mode');
+            if (toggleDarkModeBtn) {
+                toggleDarkModeBtn.textContent = '☀️ Light Mode';
+            }
+        }
 
         // Syntax highlighting helper
         const updateHighlight = () => {
@@ -541,6 +553,15 @@ class MarkdownEditorComponent extends HTMLElement {
         if (toggleDirectionBtn) {
             toggleDirectionBtn.addEventListener('click', () => {
                 this.markdownEditor.toggleDirection();
+            });
+        }
+
+        if (toggleDarkModeBtn) {
+            toggleDarkModeBtn.addEventListener('click', () => {
+                container.classList.toggle('dark-mode');
+                const isDark = container.classList.contains('dark-mode');
+                toggleDarkModeBtn.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+                localStorage.setItem('md-editor-dark-mode', isDark);
             });
         }
 
@@ -926,15 +947,62 @@ class MarkdownEditorComponent extends HTMLElement {
                     box-sizing: border-box;
                 }
 
+                /* CSS Variables for theming */
+                .editor-container {
+                    --bg-primary: #ffffff;
+                    --bg-secondary: #f7fafc;
+                    --bg-tertiary: #fafafa;
+                    --text-primary: #2d3748;
+                    --text-secondary: #4a5568;
+                    --text-muted: #718096;
+                    --text-placeholder: #a0aec0;
+                    --border-color: #e2e8f0;
+                    --border-color-dark: #cbd5e0;
+                    --accent-color: #4299e1;
+                    --accent-hover: #3182ce;
+                    --code-bg: #f7fafc;
+                    --code-text: #e53e3e;
+                    --pre-bg: #2d3748;
+                    --pre-text: #f7fafc;
+                    --syntax-color: #a0aec0;
+                    --btn-hover-bg: #edf2f7;
+                    
+                    --editor-font-family: monospace;
+                    --editor-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    
+                    --editor-font-size: 18px;
+                }
+
+                .editor-container.dark-mode {
+                    --bg-primary: #1a202c;
+                    --bg-secondary: #2d3748;
+                    --bg-tertiary: #1a202c;
+                    --text-primary: #f7fafc;
+                    --text-secondary: #e2e8f0;
+                    --text-muted: #cbd5e0;
+                    --text-placeholder: #718096;
+                    --border-color: rgb(70, 70, 70);
+                    --border-color-dark: rgb(60, 60, 60);
+                    --accent-color: #63b3ed;
+                    --accent-hover: #4299e1;
+                    --code-bg: rgb(50, 50, 50);
+                    --code-text: #fc8181;
+                    --pre-bg: rgb(25, 25, 25);
+                    --pre-text: #e2e8f0;
+                    --syntax-color: #718096;
+                    --btn-hover-bg: rgb(60, 60, 60);
+                }
+
                 .editor-container {
                     display: grid;
                     grid-template-columns: 1fr 1fr;
                     height: 100%;
                     min-height: 500px;
-                    background: white;
+                    background: var(--bg-primary);
                     border-radius: 8px;
                     overflow: hidden;
                     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    transition: background-color 0.3s ease, color 0.3s ease;
                 }
 
                 .editor-pane,
@@ -945,15 +1013,15 @@ class MarkdownEditorComponent extends HTMLElement {
                 }
 
                 .preview-pane {
-                    border-right: 1px solid #e2e8f0;
+                    border-right: 1px solid var(--border-color);
                 }
 
                 .pane-header {
-                    background: #f7fafc;
+                    background: var(--bg-secondary);
                     padding: 12px 20px;
-                    border-bottom: 2px solid #e2e8f0;
+                    border-bottom: 2px solid var(--border-color);
                     font-weight: 600;
-                    color: #2d3748;
+                    color: var(--text-primary);
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
@@ -975,7 +1043,7 @@ class MarkdownEditorComponent extends HTMLElement {
                 .direction-indicator {
                     font-size: 12px;
                     padding: 4px 8px;
-                    background: #4299e1;
+                    background: var(--accent-color);
                     color: white;
                     border-radius: 4px;
                     font-weight: 500;
@@ -983,7 +1051,7 @@ class MarkdownEditorComponent extends HTMLElement {
 
                 .btn {
                     padding: 6px 12px;
-                    background: #4299e1;
+                    background: var(--accent-color);
                     color: white;
                     border: none;
                     border-radius: 6px;
@@ -994,7 +1062,7 @@ class MarkdownEditorComponent extends HTMLElement {
                 }
 
                 .btn:hover {
-                    background: #3182ce;
+                    background: var(--accent-hover);
                     transform: translateY(-1px);
                 }
 
@@ -1006,16 +1074,16 @@ class MarkdownEditorComponent extends HTMLElement {
                     display: flex;
                     gap: 4px;
                     padding: 8px 12px;
-                    background: #f7fafc;
-                    border-bottom: 1px solid #e2e8f0;
+                    background: var(--bg-secondary);
+                    border-bottom: 1px solid var(--border-color);
                     flex-wrap: wrap;
                     align-items: center;
                 }
 
                 .toolbar-btn {
                     padding: 6px 12px;
-                    background: white;
-                    border: 1px solid #e2e8f0;
+                    background: var(--bg-primary);
+                    border: 1px solid var(--border-color);
                     border-radius: 4px;
                     cursor: pointer;
                     font-size: 14px;
@@ -1025,21 +1093,22 @@ class MarkdownEditorComponent extends HTMLElement {
                     align-items: center;
                     justify-content: center;
                     transition: all 0.2s;
+                    color: var(--text-primary);
                 }
 
                 .toolbar-btn:hover {
-                    background: #edf2f7;
-                    border-color: #cbd5e0;
+                    background: var(--btn-hover-bg);
+                    border-color: var(--border-color-dark);
                 }
 
                 .toolbar-btn:active {
-                    background: #e2e8f0;
+                    background: var(--border-color);
                 }
 
                 .toolbar-divider {
                     width: 1px;
                     height: 24px;
-                    background: #e2e8f0;
+                    background: var(--border-color);
                     margin: 0 4px;
                 }
 
@@ -1056,20 +1125,20 @@ class MarkdownEditorComponent extends HTMLElement {
                     right: 0;
                     bottom: 0;
                     padding: 20px;
-                    font-family: 'Courier New', Courier, monospace;
-                    font-size: 16px;
+                    font-family: var(--editor-font-family);
+                    font-size: var(--editor-font-size);
                     line-height: 1.6;
                     white-space: pre-wrap;
                     word-wrap: break-word;
                     overflow: auto;
                     pointer-events: none;
-                    color: #2d3748;
-                    background: white;
+                    color: var(--text-primary);
+                    background: var(--bg-tertiary);
                     z-index: 0;
                 }
 
                 .md-syntax {
-                    color: #a0aec0;
+                    color: var(--syntax-color);
                     font-weight: 400;
                 }
 
@@ -1090,18 +1159,18 @@ class MarkdownEditorComponent extends HTMLElement {
                     padding: 20px;
                     border: none;
                     outline: none;
-                    font-family: 'Courier New', Courier, monospace;
-                    font-size: 16px;
+                    font-family: var(--editor-font-family);
+                    font-size: var(--editor-font-size);
                     line-height: 1.6;
                     resize: none;
                     background: transparent;
                     color: transparent;
-                    caret-color: #2d3748;
+                    caret-color: var(--text-primary);
                     z-index: 1;
                 }
 
                 #editor::placeholder {
-                    color: #a0aec0;
+                    color: var(--text-placeholder);
                 }
 
                 #editor.rtl {
@@ -1130,7 +1199,8 @@ class MarkdownEditorComponent extends HTMLElement {
                     overflow-y: auto;
                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
                     line-height: 1.6;
-                    color: #2d3748;
+                    color: var(--text-primary);
+                    background: var(--bg-primary);
                 }
 
                 .preview-content.rtl {
@@ -1155,19 +1225,19 @@ class MarkdownEditorComponent extends HTMLElement {
                     line-height: 1.25;
                 }
 
-                .preview-content h1 { font-size: 2em; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; }
-                .preview-content h2 { font-size: 1.5em; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; }
+                .preview-content h1 { font-size: 2em; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+                .preview-content h2 { font-size: 1.5em; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
                 .preview-content h3 { font-size: 1.25em; }
                 .preview-content h4 { font-size: 1em; }
                 .preview-content h5 { font-size: 0.875em; }
-                .preview-content h6 { font-size: 0.85em; color: #718096; }
+                .preview-content h6 { font-size: 0.85em; color: var(--text-muted); }
 
                 .preview-content p {
                     margin-bottom: 16px;
                 }
 
                 .preview-content a {
-                    color: #4299e1;
+                    color: var(--accent-color);
                     text-decoration: none;
                 }
 
@@ -1176,17 +1246,17 @@ class MarkdownEditorComponent extends HTMLElement {
                 }
 
                 .preview-content code {
-                    background: #f7fafc;
+                    background: var(--code-bg);
                     padding: 2px 6px;
                     border-radius: 3px;
                     font-family: 'Courier New', Courier, monospace;
                     font-size: 0.9em;
-                    color: #e53e3e;
+                    color: var(--code-text);
                 }
 
                 .preview-content pre {
-                    background: #2d3748;
-                    color: #f7fafc;
+                    background: var(--pre-bg);
+                    color: var(--pre-text);
                     padding: 16px;
                     border-radius: 6px;
                     overflow-x: auto;
@@ -1200,9 +1270,9 @@ class MarkdownEditorComponent extends HTMLElement {
                 }
 
                 .preview-content blockquote {
-                    border-left: 4px solid #4299e1;
+                    border-left: 4px solid var(--accent-color);
                     padding-left: 16px;
-                    color: #718096;
+                    color: var(--text-muted);
                     font-style: italic;
                     margin: 16px 0;
                 }
@@ -1226,7 +1296,7 @@ class MarkdownEditorComponent extends HTMLElement {
 
                 .preview-content hr {
                     border: none;
-                    border-top: 2px solid #e2e8f0;
+                    border-top: 2px solid var(--border-color);
                     margin: 24px 0;
                 }
 
@@ -1238,7 +1308,7 @@ class MarkdownEditorComponent extends HTMLElement {
 
                     .preview-pane {
                         border-right: none;
-                        border-bottom: 1px solid #e2e8f0;
+                        border-bottom: 1px solid var(--border-color);
                     }
                 }
             </style>
